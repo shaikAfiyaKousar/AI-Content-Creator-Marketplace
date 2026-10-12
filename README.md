@@ -17,7 +17,7 @@
 - **Dual Personas:** Sign up or log in as an **AI Creator** or **Brand / Agency**.
 - **Role-Based Portals:** Dedicated dashboards tailored to each role's specific workflows.
 - **Secure Authentication:** JWT tokens with bcrypt-hashed passwords and bearer authorization interceptors.
-- **One-Click Demo Switcher:** Switch between test brands and creators with a single click in the top navigation bar.
+- **Local Demo Switcher:** Development mode includes one-click test accounts; production does not seed shared demo passwords.
 
 ### 2. Creator Profiles & AI Provenance Portfolios
 - **Technical Profiles:** AI tools stack, skill tags, hourly rates, project minimums, experience years, and availability badges.
@@ -238,6 +238,24 @@ Use the **"Demo Switcher"** button in the top navigation bar to test any account
 ## 🛡️ Security & Architecture Best Practices
 
 - **Zero Hardcoded Secrets:** Configured via `.env` files with sane development defaults.
-- **Zero Configuration DB Fallback:** Seamlessly connects to MongoDB Atlas/local Mongo, or auto-spawns an isolated memory database instance if local Mongo is unavailable.
+- **Development DB Fallback:** Local development can use MongoDB Atlas/local Mongo or an isolated memory database. Production requires a configured persistent MongoDB URI.
 - **Scoped Authorization:** Strict middleware guards enforce role privileges (brands cannot apply to briefs; creators cannot approve briefs).
 - **Graceful Error Handling:** Centralized Express error handler catches CastErrors, duplicate keys, and validation exceptions.
+## Production Deployment
+
+GitHub Pages hosts the React frontend only. Account registration, sign-in, profiles, briefs, applications, projects, and messages require the Express API and a persistent MongoDB database.
+
+## Deploy the API
+
+1. Create a MongoDB Atlas database and database user. In Atlas Network Access, allow connections from your API host. Keep the database URI private.
+2. In Render, choose **New → Blueprint**, connect this repository, and deploy the `render.yaml` service.
+3. When Render asks for `MONGODB_URI`, enter the Atlas connection string, including the database name. Render generates `JWT_SECRET` from the Blueprint.
+4. Wait for the Render service health check at `/api/health` to pass. Copy the service origin, for example `https://ai-content-creator-marketplace-api.onrender.com` (do not append `/api`).
+
+## Connect GitHub Pages to the API
+
+1. In the GitHub repository, open **Settings → Secrets and variables → Actions → Variables**.
+2. Add a repository variable named `VITE_API_URL` with the Render service origin.
+3. In **Settings → Pages**, confirm the source is **GitHub Actions**. Then rerun **Deploy Website** from the **Actions** tab, or push another commit.
+
+The frontend build appends `/api` to `VITE_API_URL`. The API only permits the GitHub Pages origin and local Vite development by default. User accounts and marketplace records are stored in MongoDB and survive API restarts.

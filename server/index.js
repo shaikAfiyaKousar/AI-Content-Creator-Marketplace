@@ -11,9 +11,19 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    // Allow non-browser clients such as health checks and local scripts.
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('This website is not allowed to access the API.'));
+  }
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -50,11 +60,15 @@ app.use(errorHandler);
 // Start server and initialize database
 const startServer = async () => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET must be configured in production.');
+      if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI must be configured in production.');
+    }
     await connectDB();
 
-    // Auto-seed if database is freshly initialized or empty
+    // Seed demo users only in development; never publish known demo passwords.
     const usersCount = await User.countDocuments();
-    if (usersCount === 0) {
+    if (usersCount === 0 && process.env.NODE_ENV !== 'production') {
       console.log('[Server] Database is empty. Auto-seeding initial development data...');
       await seedData();
       console.log('[Server] Auto-seed complete.');

@@ -7,9 +7,15 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [demoAccounts, setDemoAccounts] = useState({ creators: [], brands: [] });
 
   useEffect(() => {
+    const handleExpiredSession = () => {
+      localStorage.removeItem('token');
+      setUser(null);
+      setProfile(null);
+    };
+    window.addEventListener('auth:expired', handleExpiredSession);
+
     const initializeAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -27,20 +33,11 @@ export const AuthProvider = ({ children }) => {
         }
       }
       
-      // Load demo accounts list for rapid testing
-      try {
-        const demoRes = await api.get('/auth/demo-accounts');
-        if (demoRes.data.success) {
-          setDemoAccounts(demoRes.data.demoAccounts);
-        }
-      } catch (e) {
-        // demo accounts silent fail
-      }
-
       setLoading(false);
     };
 
     initializeAuth();
+    return () => window.removeEventListener('auth:expired', handleExpiredSession);
   }, []);
 
   const login = async (email, password) => {
@@ -97,7 +94,6 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateProfileState,
         quickSwitch,
-        demoAccounts,
         isAuthenticated: !!user,
         isBrand: user?.role === 'brand',
         isCreator: user?.role === 'creator'

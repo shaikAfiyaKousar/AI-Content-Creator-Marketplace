@@ -71,7 +71,7 @@ const RegisterPage = () => {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please check your inputs.');
+      setError(err.response?.data?.message || err.message || 'Registration failed. Please check your inputs.');
     } finally {
       setLoading(false);
     }

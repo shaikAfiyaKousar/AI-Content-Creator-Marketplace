@@ -21,14 +21,11 @@ const LoginPage = () => {
     try {
       const res = await login(email, password);
       if (res && res.user) {
-        if (res.user.role === 'brand') {
-          navigate('/dashboard/brand');
-        } else {
-          navigate('/dashboard/creator');
-        }
+        const defaultPath = res.user.role === 'brand' ? '/dashboard/brand' : '/dashboard/creator';
+        navigate(location.state?.from?.pathname || defaultPath, { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -70,7 +67,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Demo Fast Login Pill Box for Evaluators */}
+        {import.meta.env.DEV && (
         <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-950/40 to-indigo-950/40 border border-brand-500/30 mb-6 backdrop-blur-sm">
           <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 mb-2">
             <Zap className="w-3.5 h-3.5 fill-amber-400" />
@@ -95,6 +92,7 @@ const LoginPage = () => {
             </button>
           </div>
         </div>
+        )}
 
         {/* Card Form */}
         <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-800 shadow-xl">

@@ -148,6 +148,14 @@ exports.updateApplicationStatus = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Not authorized to update this application' });
     }
 
+    if (
+      status === 'accepted' &&
+      brief.status !== 'open' &&
+      brief.selectedCreator?.toString() !== application.creator.toString()
+    ) {
+      return res.status(409).json({ success: false, message: 'This brief already has a selected creator' });
+    }
+
     application.status = status;
     await application.save();
 

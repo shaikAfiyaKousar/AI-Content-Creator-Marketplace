@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, logout, quickSwitch, demoAccounts } = useAuth();
+  const { user, logout, quickSwitch } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -121,7 +121,8 @@ const Navbar = () => {
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* Quick Demo Switcher (Crucial for Evaluation!) */}
+          {/* Keep shared demo accounts available only in local development. */}
+          {import.meta.env.DEV && (
           <div className="relative">
             <button
               onClick={() => setDemoMenuOpen(!demoMenuOpen)}
@@ -188,6 +189,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
+          )}
 
           {/* Theme Toggle */}
           <button

@@ -4,7 +4,9 @@ const CreatorProfile = require('../models/CreatorProfile');
 const BrandProfile = require('../models/BrandProfile');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'hackxlerate_ai_secret_jwt_key_2026', {
+  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'hackxlerate_ai_secret_jwt_key_2026');
+  if (!secret) throw new Error('JWT_SECRET must be configured in production.');
+  return jwt.sign({ id }, secret, {
     expiresIn: '30d'
   });
 };

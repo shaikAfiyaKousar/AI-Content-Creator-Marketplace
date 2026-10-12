@@ -43,6 +43,8 @@ const BriefDetailsPage = () => {
   const [applying, setApplying] = useState(false);
   const [applySuccess, setApplySuccess] = useState(null);
   const [applyError, setApplyError] = useState('');
+  const [statusError, setStatusError] = useState('');
+  const [updatingApplicationId, setUpdatingApplicationId] = useState(null);
 
   const fetchBriefData = async () => {
     setLoading(true);
@@ -108,6 +110,8 @@ const BriefDetailsPage = () => {
   };
 
   const handleUpdateAppStatus = async (appId, newStatus) => {
+    setStatusError('');
+    setUpdatingApplicationId(appId);
     try {
       const res = await api.put(`/applications/${appId}/status`, { status: newStatus });
       if (res.data.success) {
@@ -119,7 +123,9 @@ const BriefDetailsPage = () => {
         }
       }
     } catch (err) {
-      console.error('Error updating status', err);
+      setStatusError(err.response?.data?.message || err.message || 'Could not update this application. Please try again.');
+    } finally {
+      setUpdatingApplicationId(null);
     }
   };
 
@@ -305,6 +311,11 @@ const BriefDetailsPage = () => {
               {/* Tab 1: Applications Received */}
               {activeBrandTab === 'applications' && (
                 <div className="space-y-4">
+                  {statusError && (
+                    <p role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-500">
+                      {statusError}
+                    </p>
+                  )}
                   {applications.length === 0 ? (
                     <div className="text-center py-8 text-xs text-gray-400">
                       No applications submitted for this brief yet.
@@ -360,16 +371,18 @@ const BriefDetailsPage = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleUpdateAppStatus(app._id, 'rejected')}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10"
+                                disabled={updatingApplicationId !== null}
+                                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 disabled:opacity-50"
                               >
                                 Reject
                               </button>
                               <button
                                 onClick={() => handleUpdateAppStatus(app._id, 'accepted')}
-                                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1.5"
+                                disabled={updatingApplicationId !== null}
+                                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>Accept & Launch Project</span>
+                                <span>{updatingApplicationId === app._id ? 'Updating...' : 'Accept & Launch Project'}</span>
                               </button>
                             </div>
                           )}

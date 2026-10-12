@@ -1,5 +1,6 @@
 node_modules/
 **/node_modules/
+**/.mongodb-cache/
 .env
 .env.*
 !.env.example
@@ -7,4 +8,3 @@ client/dist/
 server/.env
 server/.env.*
 !.env.example
-

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -25,6 +25,7 @@ import ProfileSettingsPage from './pages/ProfileSettingsPage';
 // Protected Route Helpers
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -35,7 +36,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (requiredRole && user.role !== requiredRole && user.role !== 'admin') {

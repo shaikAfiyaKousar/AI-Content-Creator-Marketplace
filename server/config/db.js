@@ -3,16 +3,20 @@ const mongoose = require('mongoose');
 let mongoMemoryServer = null;
 
 const connectDB = async () => {
+  const isProduction = process.env.NODE_ENV === 'production';
   const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ai-marketplace';
   
   try {
     // Attempt connecting to the provided or default URI with a fast timeout
-    console.log(`[DB] Attempting connection to MongoDB at: ${uri}`);
+    console.log('[DB] Attempting connection to MongoDB...');
     await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 3000
     });
     console.log('[DB] Successfully connected to MongoDB database.');
   } catch (err) {
+    if (isProduction) {
+      throw new Error('Could not connect to the configured MongoDB database. Check MONGODB_URI and Atlas network access.');
+    }
     console.warn(`[DB] Local or external MongoDB connection failed: ${err.message}`);
     console.log('[DB] Falling back to in-memory MongoMemoryServer for isolated and seamless local execution...');
     try {
