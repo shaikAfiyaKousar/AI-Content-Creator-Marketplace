@@ -4,7 +4,8 @@ let mongoMemoryServer = null;
 
 const connectDB = async () => {
   const isProduction = process.env.NODE_ENV === 'production';
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ai-marketplace';
+  const configuredUri = process.env.MONGODB_URI?.trim();
+  const uri = configuredUri || 'mongodb://127.0.0.1:27017/ai-marketplace';
   
   try {
     // Attempt connecting to the provided or default URI with a fast timeout
@@ -14,8 +15,10 @@ const connectDB = async () => {
     });
     console.log('[DB] Successfully connected to MongoDB database.');
   } catch (err) {
-    if (isProduction) {
-      throw new Error('Could not connect to the configured MongoDB database. Check MONGODB_URI and Atlas network access.');
+    // A configured URI represents an explicit choice (often Atlas). Never hide a
+    // bad URI or unavailable database by silently switching to ephemeral data.
+    if (isProduction || configuredUri) {
+      throw new Error(`Could not connect to MongoDB. Check MONGODB_URI and database network access. ${err.message}`);
     }
     console.warn(`[DB] Local or external MongoDB connection failed: ${err.message}`);
     console.log('[DB] Falling back to in-memory MongoMemoryServer for isolated and seamless local execution...');

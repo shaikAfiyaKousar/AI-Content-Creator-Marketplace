@@ -29,7 +29,9 @@ jobs:
       - name: Build website
         working-directory: client
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          # The repo variable can override the default if the API is hosted
+          # somewhere else. This keeps GitHub Pages builds API-connected by default.
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://ai-content-creator-marketplace-api.onrender.com' }}
         run: npm run build
 
       - name: Support client-side routes on GitHub Pages

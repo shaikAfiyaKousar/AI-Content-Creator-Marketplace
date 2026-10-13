@@ -134,6 +134,11 @@ npm run seed
 # or: cd server && npm run seed
 ```
 
+### Configure the Backend Database
+The API reads `server/.env` when started from the `server` directory. Copy `server/.env.example` to `server/.env`, then set `MONGODB_URI` to your MongoDB Atlas connection string (including a database name) for persistent data. Keep the real `.env` file private; it is ignored by Git. If `MONGODB_URI` is blank, development first tries local MongoDB and then uses a temporary in-memory database. A configured URI that cannot connect now stops the API with an error instead of silently losing persistence.
+
+For deployment, set `MONGODB_URI`, `JWT_SECRET`, and `CORS_ORIGIN` in the hosting provider's environment settings. `render.yaml` already defines the API service and the GitHub Pages origin. The GitHub Pages workflow now builds with the Render API origin by default; set the GitHub Actions repository variable `VITE_API_URL` only if you host the API at a different origin (without `/api`).
+
 ### Step 3: Run the Application
 Open two terminal windows:
 
